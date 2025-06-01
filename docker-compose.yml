@@ -1,0 +1,19 @@
+version: "3"
+
+networks:
+  npm-network:
+    driver: bridge
+
+services:
+  nextcloud:
+    image: nextcloud
+    container_name: nextcloud
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - nextcloud_data:/var/www/html
+    networks:
+      - npm-network
+volumes:
+  nextcloud_data:
