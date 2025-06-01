@@ -9,11 +9,48 @@ services:
     image: nextcloud
     container_name: nextcloud
     restart: unless-stopped
-    ports:
-      - "8080:80"
     volumes:
       - nextcloud_data:/var/www/html
     networks:
       - npm-network
+
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole
+    restart: unless-stopped
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "8080:80" # Pi-hole Admin Web UI
+    environment:
+      TZ: Africa/Cairo
+      FTLCONF_webserver_api_password: 'admin'
+      ServerIP: "192.168.1.2"
+    volumes:
+      - pihole_data:/etc/pihole
+      - pihole_dnsmasq:/etc/dnsmasq.d
+    networks:
+      - npm-network
+    cap_add:
+      - NET_ADMIN
+
+  npm:
+    image: jc21/nginx-proxy-manager:latest
+    container_name: nginx-proxy-manager
+    restart: unless-stopped
+    ports:
+      - "80:80"     # HTTP
+      - "81:81"     # NPM Admin UI
+      - "443:443"   # HTTPS
+    networks:
+      - npm-network
+    volumes:
+      - npm_data:/data
+      - npm_letsencrypt:/etc/letsencrypt
+
 volumes:
   nextcloud_data:
+  pihole_data:
+  pihole_dnsmasq:
+  npm_data:
+  npm_letsencrypt:
